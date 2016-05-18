@@ -226,7 +226,8 @@ class TestingApp(RequestHandler):
             return Response("need to keep retrying!", status="418 I'm A Teapot")
 
     def chunked(self, request):
-        return Response(['123'] * 4)
+        return Response(['123'] * 4, headers=[('Transfer-Encoding', 'chunked'),
+                                              ('Content-Length', 12)])
 
     def chunked_gzip(self, request):
         chunks = []
@@ -237,7 +238,9 @@ class TestingApp(RequestHandler):
 
         chunks.append(compressor.flush())
 
-        return Response(chunks, headers=[('Content-Encoding', 'gzip')])
+        return Response(chunks, headers=[('Transfer-Encoding', 'chunked'),
+                                         ('Content-Length', sum([len(c) for c in chunks])),
+                                         ('Content-Encoding', 'gzip')])
 
     def nbytes(self, request):
         length = int(request.params.get('length'))
